@@ -29,7 +29,7 @@ const AddProject: React.FC<AddProjectProps> = ({ onClose }) => {
 
       const newProject = { title, description, image: imageUrl, link };
 
-      const response = await fetch('/api/projects', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/projects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

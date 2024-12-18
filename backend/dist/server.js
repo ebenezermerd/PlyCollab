@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,51 +15,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const path_1 = __importDefault(require("path"));
+const blob_1 = require("@vercel/blob");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-app.use(express_1.default.static(path_1.default.join(__dirname, '../../public')));
-app.get('/api/team', (req, res) => {
-    const team = [
-        {
-            name: 'John Doe',
-            role: 'Full Stack Developer',
-            image: '/team-member-1.jpg',
-        },
-        {
-            name: 'Jane Smith',
-            role: 'UI/UX Designer',
-            image: '/team-member-2.jpg',
-        },
-        {
-            name: 'Mike Johnson',
-            role: 'Backend Specialist',
-            image: '/team-member-3.jpg',
-        },
-    ];
-    res.json(team);
-});
+let projects = [];
+app.post('/api/upload', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { file, fileName } = req.body;
+    try {
+        const { url } = yield (0, blob_1.put)(fileName, Buffer.from(file, 'base64'), {
+            access: 'public',
+        });
+        res.status(201).json({ url });
+    }
+    catch (error) {
+        console.error('Upload failed:', error);
+        res.status(500).json({ error: 'Failed to upload file' });
+    }
+}));
+app.post('/api/projects', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, description, file, fileName, link } = req.body;
+    try {
+        const { url } = yield (0, blob_1.put)(fileName, Buffer.from(file, 'base64'), {
+            access: 'public',
+        });
+        const newProject = { title, description, image: url, link };
+        projects.push(newProject);
+        res.status(201).json(newProject);
+    }
+    catch (error) {
+        console.error('Project creation failed:', error);
+        res.status(500).json({ error: 'Failed to create project' });
+    }
+}));
 app.get('/api/projects', (req, res) => {
-    const projects = [
-        {
-            title: 'E-commerce Platform',
-            description: 'A fully responsive online store with integrated payment systems.',
-            image: '/project-1.jpg',
-        },
-        {
-            title: 'Task Management App',
-            description: 'A collaborative project management tool for remote teams.',
-            image: '/project-2.jpg',
-        },
-        {
-            title: 'Social Media Dashboard',
-            description: 'An analytics dashboard for tracking social media performance.',
-            image: '/project-3.jpg',
-        },
-    ];
     res.json(projects);
 });
 app.listen(port, () => {

@@ -16,7 +16,7 @@ const Projects: React.FC = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/projects`);
+        const response = await fetch('/datas/projects.json');
         if (!response.ok) {
           throw new Error('Failed to fetch project data');
         }

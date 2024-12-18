@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { put } from '@vercel/blob';
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  link: string;
+}
 
 interface AddProjectProps {
   onClose: () => void;
@@ -8,7 +15,7 @@ interface AddProjectProps {
 const AddProject: React.FC<AddProjectProps> = ({ onClose }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
   const [link, setLink] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,33 +24,25 @@ const AddProject: React.FC<AddProjectProps> = ({ onClose }) => {
     setLoading(true);
 
     try {
-      let imageUrl = '';
+      const newProject = { id: Date.now().toString(), title, description, image: imageUrl, link };
 
-      if (image) {
-        const base64File = await fileToBase64(image);
-        const { url } = await put(image.name, Buffer.from(base64File, 'base64'), {
-          access: 'public',
-        });
-        imageUrl = url;
-      }
+      const response = await fetch('/datas/projects.json');
+      const data: Project[] = await response.json();
 
-      const newProject = { title, description, image: imageUrl, link };
+      data.push(newProject);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/projects`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProject),
-      });
+      const updatedJson = JSON.stringify(data, null, 2);
 
-      if (response.ok) {
-        alert('Project added successfully!');
-        resetForm();
-        onClose();
-      } else {
-        alert('Failed to add project.');
-      }
+      const blob = new Blob([updatedJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'projects.json';
+      a.click();
+
+      alert('Project added successfully!');
+      resetForm();
+      onClose();
     } catch (error) {
       console.error('Error uploading project:', error);
       alert('An error occurred.');
@@ -52,19 +51,10 @@ const AddProject: React.FC<AddProjectProps> = ({ onClose }) => {
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result?.toString().split(',')[1] || '');
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setImage(null);
+    setImageUrl('');
     setLink('');
   };
 
@@ -97,13 +87,14 @@ const AddProject: React.FC<AddProjectProps> = ({ onClose }) => {
         ></textarea>
       </div>
       <div>
-        <label htmlFor="image" className="block text-sm font-medium mb-2 text-text-primary">
-          Upload Image
+        <label htmlFor="imageUrl" className="block text-sm font-medium mb-2 text-text-primary">
+          Image URL
         </label>
         <input
-          type="file"
-          id="image"
-          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
+          type="text"
+          id="imageUrl"
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
           className="w-full px-4 py-2 rounded-md bg-dark-bg border border-gray-700 focus:outline-none focus:border-neon-green text-text-primary"
           required
         />

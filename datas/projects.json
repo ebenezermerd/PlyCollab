@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1",
+    "title": "Project Alpha",
+    "description": "A revolutionary project that changes everything.",
+    "image": "https://example.com/images/project-alpha.jpg",
+    "link": "https://example.com/projects/alpha"
+  },
+  {
+    "id": "2",
+    "title": "Project Beta",
+    "description": "An innovative solution for modern problems.",
+    "image": "https://example.com/images/project-beta.jpg",
+    "link": "https://example.com/projects/beta"
+  }
+]

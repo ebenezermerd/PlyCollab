@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react';
 
 interface TeamMember {
   name: string;
@@ -6,33 +6,11 @@ interface TeamMember {
   image: string;
 }
 
-const TeamMembers: React.FC = () => {
-  const [team, setTeam] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface TeamMembersProps {
+  data: TeamMember[];
+}
 
-  useEffect(() => {
-    fetch('/api/team')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch team data');
-        }
-        return response.json();
-      })
-      .then(data => {
-        setTeam(data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching team data:', error);
-        setError('Failed to load team data. Please try again later.');
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <div>Loading team members...</div>;
-  if (error) return <div>{error}</div>;
-
+const TeamMembers: React.FC<TeamMembersProps> = ({ data }) => {
   return (
     <section className="py-20 relative" id="team">
       <div className="container mx-auto px-4 relative z-10">
@@ -40,7 +18,7 @@ const TeamMembers: React.FC = () => {
           Our <span className="text-neon-green">Team</span>
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
-          {team.map((member, index) => (
+          {data.map((member, index) => (
             <div key={index} className="p-6 rounded-lg glass hover:bg-neon-green/5 transition-colors text-center">
               <img
                 src={member.image}
@@ -54,8 +32,8 @@ const TeamMembers: React.FC = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default TeamMembers
+export default TeamMembers;
 
